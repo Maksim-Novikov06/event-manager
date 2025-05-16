@@ -24,7 +24,6 @@ public class LocationController {
     public ResponseEntity<LocationDto> addLocation(
             @RequestBody @Valid LocationDto locationToCreate
     ) {
-
         Location createdLocation = locationService.createLocation(
                 locationMapper.toEntity(locationToCreate)
         );
@@ -32,7 +31,6 @@ public class LocationController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(locationMapper.toDto(createdLocation));
-
     }
 
     @PutMapping("/{id}")
@@ -52,8 +50,6 @@ public class LocationController {
 
     @GetMapping
     public ResponseEntity<List<LocationDto>> getAllLocations() {
-
-
         List<LocationDto> listLocations = locationService.getAllLocations()
                 .stream()
                 .map(locationMapper::toDto)
@@ -69,6 +65,7 @@ public class LocationController {
             @PathVariable Long id
     ) {
         Location location = locationService.getLocationById(id);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(locationMapper.toDto(location));
@@ -84,6 +81,4 @@ public class LocationController {
                 status(HttpStatus.NO_CONTENT)
                 .body(locationMapper.toDto(deletedLocation));
     }
-
-
 }

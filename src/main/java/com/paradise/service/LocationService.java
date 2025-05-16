@@ -4,6 +4,8 @@ package com.paradise.service;
 import com.paradise.controllers.LocationController;
 import com.paradise.entities.Location;
 import com.paradise.repository.LocationRepository;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.slf4j.Logger;
@@ -21,6 +23,14 @@ public class LocationService {
 
     public Location createLocation(Location location) {
         log.info("Inside createLocation");
+        Location checkLocation = locationRepository.findByName(location.getName());
+        if (checkLocation != null
+                && checkLocation.getName().equals(location.getName())
+                && checkLocation.getAddress().equals(location.getAddress())
+        ) {
+            throw new EntityExistsException("A location with a name %s and the address %s It has already been added"
+                    .formatted(location.getName(), location.getAddress()));
+        }
         return locationRepository.save(location);
     }
 
@@ -28,31 +38,32 @@ public class LocationService {
         return locationRepository.findAll();
     }
 
-    public Location getLocationById(Long locationId) {
-        return locationRepository.findById(locationId)
-                .orElseThrow(RuntimeException::new);
+    public Location getLocationById(Long id) {
+        Location location = locationRepository.findById(id).orElse(null);
+
+        if (location == null) {
+            throw new EntityNotFoundException("There is no location with ID = %d in Database".formatted(id));
+        }
+
+        return location;
+
     }
 
 
     public Location deleteLocationById(Long id) {
-        Location locationToDelete = locationRepository.findById(id)
-                .orElseThrow(RuntimeException::new);
+        Location locationToDelete = getLocationById(id);
         locationRepository.delete(locationToDelete);
         return locationToDelete;
     }
 
     public Location updateLocation(Long id, Location entity) {
-        Location locationToUpdate = locationRepository.findById(id)
-                .orElseThrow(RuntimeException::new);
-
-        if (entity.getCapacity() < locationToUpdate.getCapacity()) {
-            throw new RuntimeException();
-        }
+        Location locationToUpdate = getLocationById(id);
 
         locationToUpdate.setName(entity.getName());
         locationToUpdate.setAddress(entity.getAddress());
         locationToUpdate.setCapacity(entity.getCapacity());
         locationToUpdate.setDescription(entity.getDescription());
+
         return locationRepository.save(locationToUpdate);
     }
 }
