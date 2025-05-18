@@ -4,9 +4,13 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <include file="v1-create-locations-table-changelog.xml" relativeToChangelogFile="true"/>
-    <include file="v1-create-users-table-changelog.xml" relativeToChangelogFile="true"/>
-    <include file="v1-insert-users.xml" relativeToChangelogFile="true"/>
-    <include file="v1-insert-locations.xml" relativeToChangelogFile="true"/>
+    <changeSet id="v1-1" author="Novikov Maksim">
+        <sqlFile path="create-users/create_table_users.sql"
+                 relativeToChangelogFile="true"/>
 
+        <rollback>
+            <sqlFile path="create-users/rollback/create_table_user_rollback.sql"
+                     relativeToChangelogFile="true"/>
+        </rollback>
+    </changeSet>
 </databaseChangeLog>
