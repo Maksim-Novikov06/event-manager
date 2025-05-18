@@ -35,6 +35,7 @@ public class LocationController {
                 .body(locationMapper.toDto(createdLocation));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LocationDto> updateLocation(
             @PathVariable Long id,
@@ -49,7 +50,7 @@ public class LocationController {
                 .status(HttpStatus.OK)
                 .body(locationMapper.toDto(updatedLocation));
     }
-
+    @PreAuthorize("hasAuthority('ADMIN, USER')")
     @GetMapping
     public ResponseEntity<List<LocationDto>> getAllLocations() {
         List<LocationDto> listLocations = locationService.getAllLocations()
@@ -62,6 +63,7 @@ public class LocationController {
                 .body(listLocations);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN, USER')")
     @GetMapping("/{id}")
     public ResponseEntity<LocationDto> getLocationById(
             @PathVariable Long id
@@ -73,6 +75,7 @@ public class LocationController {
                 .body(locationMapper.toDto(location));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<LocationDto> deleteLocation(
             @PathVariable Long id
