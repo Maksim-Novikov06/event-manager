@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class LocationController {
     private final LocationMapper locationMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<LocationDto> addLocation(
             @RequestBody @Valid LocationDto locationToCreate
     ) {
@@ -33,6 +35,7 @@ public class LocationController {
                 .body(locationMapper.toDto(createdLocation));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LocationDto> updateLocation(
             @PathVariable Long id,
@@ -47,7 +50,7 @@ public class LocationController {
                 .status(HttpStatus.OK)
                 .body(locationMapper.toDto(updatedLocation));
     }
-
+    @PreAuthorize("hasAuthority('ADMIN, USER')")
     @GetMapping
     public ResponseEntity<List<LocationDto>> getAllLocations() {
         List<LocationDto> listLocations = locationService.getAllLocations()
@@ -60,6 +63,7 @@ public class LocationController {
                 .body(listLocations);
     }
 
+    @PreAuthorize("hasAuthority('ADMIN, USER')")
     @GetMapping("/{id}")
     public ResponseEntity<LocationDto> getLocationById(
             @PathVariable Long id
@@ -71,6 +75,7 @@ public class LocationController {
                 .body(locationMapper.toDto(location));
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<LocationDto> deleteLocation(
             @PathVariable Long id

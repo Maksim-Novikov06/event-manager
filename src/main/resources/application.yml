@@ -1,4 +1,8 @@
 
+jwt:
+  secret: U2FtcGxlU2VjcmV0S2V5U3RyaW5nRm9ySldUU2lnbmluZw==
+  expiration: 3600000
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:1234/event_db
@@ -9,4 +13,5 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/main-changelog.xml
     enabled: true
+
 

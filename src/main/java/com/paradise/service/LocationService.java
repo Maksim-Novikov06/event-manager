@@ -1,7 +1,6 @@
 package com.paradise.service;
 
 
-import com.paradise.controllers.LocationController;
 import com.paradise.entities.Location;
 import com.paradise.repository.LocationRepository;
 import jakarta.persistence.EntityExistsException;
@@ -18,15 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationService {
 
-    private static final Logger log = LoggerFactory.getLogger(LocationController.class);
+    private static final Logger log = LoggerFactory.getLogger(LocationService.class);
     private final LocationRepository locationRepository;
 
     public Location createLocation(Location location) {
         log.info("Inside createLocation");
-        Location checkLocation = locationRepository.findByName(location.getName());
-        if (checkLocation != null
-                && checkLocation.getName().equals(location.getName())
-                && checkLocation.getAddress().equals(location.getAddress())
+        if (locationRepository.existsByNameAndAddress(
+                location.getName(),
+                location.getAddress())
         ) {
             throw new EntityExistsException("A location with a name %s and the address %s It has already been added"
                     .formatted(location.getName(), location.getAddress()));
@@ -51,12 +49,14 @@ public class LocationService {
 
 
     public Location deleteLocationById(Long id) {
+        log.info("Inside deleteLocationById");
         Location locationToDelete = getLocationById(id);
         locationRepository.delete(locationToDelete);
         return locationToDelete;
     }
 
     public Location updateLocation(Long id, Location entity) {
+        log.info("Inside updateLocation");
         Location locationToUpdate = getLocationById(id);
 
         locationToUpdate.setName(entity.getName());
