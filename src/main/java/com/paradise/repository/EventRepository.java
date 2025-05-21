@@ -19,7 +19,7 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query(value = """
-                    select CASE WHEN COUNT(ev) > 0 THEN TRUE ELSE FALSE END
+                    SELECT CASE WHEN COUNT(ev) > 0 THEN TRUE ELSE FALSE END
                     from events ev
                     where ev.date <= :endEventTime
                     AND ev.date  + INTERVAL '1 MINUTE' * ev.duration >= :startEventTime
@@ -33,21 +33,33 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Modifying
     @Transactional
-    @Query(value = """
-                update Event ev
-                set ev.eventStatus = :status
-                where ev.id = :event_id
+    @Query("""
+                UPDATE Event ev
+                SET ev.eventStatus = :status
+                WHERE ev.id = :event_id
             """)
     void changeEventStatus(
             @Param("event_id") Long id,
             @Param("status") EventStatus eventStatus
     );
 
+    @Modifying
+    @Transactional
+    @Query("""
+                UPDATE Event ev
+                SET ev.eventStatus = :status
+                WHERE ev.id IN :event_ids
+            """)
+    void changeEventStatus(
+            @Param("event_ids") List<Long> ids,
+            @Param("status") EventStatus eventStatus
+    );
+
     List<Event> findEventsByOwnerId(Long ownerId);
 
-    @Query(value = """
+    @Query("""
             SELECT evr FROM EventRegistration evr
-            where evr.event.id = :eventId
+            WHERE evr.event.id = :eventId
             AND evr.userId = :userId
             """)
     Optional<EventRegistration> findRegistration(
@@ -55,28 +67,28 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("userId") Long userId);
 
     @Query("""
-    select evr.event FROM EventRegistration evr
-    where evr.userId = :userId
-
-""")
+                SELECT evr.event FROM EventRegistration evr
+                WHERE evr.userId = :userId
+            
+            """)
     List<Event> findAllRegisteredEventsByUserId(
             @Param("userId") Long id);
 
 
     @Query("""
-            SELECT ev FROM Event ev
-            WHERE (:name is null or ev.name LIKE %:name%)
-                AND (:placesMin is null  or ev.maxPlaces >= :placesMin)
-                AND (:placesMax is null  or ev.maxPlaces <= :placesMax)
-                AND (CAST(:dateStartAfter as date) is null or ev.date >= :dateStartAfter)
-                AND (CAST(:dateStartBefore as date) is null or ev.date <= :dateStartBefore)
-                AND (:costMin is null or ev.cost >= :costMin)
-                AND (:costMax is null or ev.cost <= :costMax)
-                AND (:durationMin is null or ev.duration >= :durationMin)
-                AND (:durationMax is null or ev.duration <= :durationMax)
-                AND (:locationId is null or ev.locationId = :locationId)
-                AND (:status is null or ev.eventStatus = :status)
-    """)
+                    SELECT ev FROM Event ev
+                    WHERE (:name is null or ev.name LIKE %:name%)
+                        AND (:placesMin is null  or ev.maxPlaces >= :placesMin)
+                        AND (:placesMax is null  or ev.maxPlaces <= :placesMax)
+                        AND (CAST(:dateStartAfter as date) is null or ev.date >= :dateStartAfter)
+                        AND (CAST(:dateStartBefore as date) is null or ev.date <= :dateStartBefore)
+                        AND (:costMin is null or ev.cost >= :costMin)
+                        AND (:costMax is null or ev.cost <= :costMax)
+                        AND (:durationMin is null or ev.duration >= :durationMin)
+                        AND (:durationMax is null or ev.duration <= :durationMax)
+                        AND (:locationId is null or ev.locationId = :locationId)
+                        AND (:status is null or ev.eventStatus = :status)
+            """)
     List<Event> search(
             @Param("name") String name,
             @Param("placesMax") Integer placesMax,
@@ -90,4 +102,17 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("locationId") Long locationId,
             @Param("status") EventStatus status);
 
+    @Query("""
+                SELECT ev.id FROM Event ev
+                WHERE ev.eventStatus = :status
+                AND ev.date < CURRENT_TIMESTAMP
+            """)
+    List<Long> getStatedEventsWithStatus(
+            @Param("status") EventStatus statusStarted);
+
+    @Query(value = """
+                SELECT ev.id FROM events ev
+                WHERE ev.date  + INTERVAL '1 MINUTE' * ev.duration < CURRENT_TIMESTAMP
+            """, nativeQuery = true)
+    List<Long> getEndedEventsWithStatus(EventStatus statusEnded);
 }

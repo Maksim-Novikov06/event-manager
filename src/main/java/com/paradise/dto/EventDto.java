@@ -15,7 +15,8 @@ public class EventDto {
     private String name;
 
     @NotNull
-    @Min(value = 1, message = "Minimum maxPlaces is 1")
+    @Min(value = 1, message = "Minimum maxPlaces is 1") // test
+//    @Min(value = 40, message = "Minimum maxPlaces is 40")
     private Integer maxPlaces;
 
     @NotNull
@@ -26,9 +27,9 @@ public class EventDto {
     private Integer cost;
 
     @NotNull
-    @Min(value = 30, message = "Minimum duration is 30")
+    @Min(value = 1, message = "Minimum duration is 1") //test
+//    @Min(value = 30, message = "Minimum duration is 30")
     private Integer duration;
-
 
     @NotNull
     @Min(value = 1, message = "Minimum locationId is 1")

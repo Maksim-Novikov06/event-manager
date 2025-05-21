@@ -1,5 +1,6 @@
 package com.paradise.service;
 
+import com.paradise.domain.EventStatus;
 import com.paradise.domain.entities.Event;
 import com.paradise.dto.EventDto;
 import com.paradise.dto.EventSearchRequest;
@@ -17,4 +18,8 @@ public interface EventService {
     void registerUserOnEvent(Long id);
     void cancelUserByEventId(Long id);
     List<Event> getAllEventByUserRegistration();
+    List<Long> changeEventStatus(EventStatus eventStatus);
+    List<Long> getEventsToStarted();
+    List<Long> getEventsToEnded();
+
 }

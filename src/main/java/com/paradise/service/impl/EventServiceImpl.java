@@ -11,6 +11,7 @@ import com.paradise.repository.EventRepository;
 import com.paradise.repository.RegistrationRepository;
 import com.paradise.service.EventService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -198,7 +199,7 @@ public class EventServiceImpl implements EventService {
 
         if (event.getOwnerId().equals(currentUser.getId())) {
             logger.info("User with id {} - owner", currentUser.getId());
-            throw new IllegalArgumentException("Owner cannot register own event=%s".formatted(event));
+            throw new IllegalArgumentException("The owner cannot register for his own event=%s".formatted(event));
         }
 
         Optional<EventRegistration> registration =
@@ -213,6 +214,13 @@ public class EventServiceImpl implements EventService {
             logger.error("Cannot register event in status = {}", event.getEventStatus());
             throw new IllegalArgumentException("Event has status: %s".formatted(event.getEventStatus()));
         }
+
+        if (event.getMaxPlaces() <= event.getEventRegistrations().size()) {
+            logger.error("An attempt to register a user. Current number of registered users: {}", event.getEventRegistrations().size());
+            throw new IllegalArgumentException("Max places exceeded");
+        }
+
+
         EventRegistration evr = new EventRegistration(
                 null,
                 currentUser.getId(),
@@ -221,6 +229,7 @@ public class EventServiceImpl implements EventService {
         );
 
         registrationRepository.save(evr);
+
     }
 
     public void cancelUserByEventId(Long id) {
@@ -243,5 +252,35 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findAllRegisteredEventsByUserId(currentUser.getId());
     }
 
-    
+    @Transactional
+    @Override
+    public List<Long> changeEventStatus(EventStatus eventStatus) {
+        if (eventStatus == EventStatus.STARTED) {
+            List<Long> eventsToStarted = getEventsToStarted();
+            if (!eventsToStarted.isEmpty()) {
+                eventRepository.changeEventStatus(eventsToStarted, eventStatus);
+            }
+            return eventsToStarted;
+        }
+        if (eventStatus == EventStatus.FINISHED) {
+            List<Long> eventsToEnded = getEventsToEnded();
+            if (!eventsToEnded.isEmpty()) {
+                eventRepository.changeEventStatus(eventsToEnded, eventStatus);
+            }
+            return eventsToEnded;
+        }
+        return List.of();
+    }
+
+    public List<Long> getEventsToStarted() {
+        return eventRepository.getStatedEventsWithStatus(EventStatus.WAIT_START);
+    }
+
+    public List<Long> getEventsToEnded() {
+        return eventRepository.getEndedEventsWithStatus(EventStatus.STARTED);
+    }
+
+
+
+
 }
