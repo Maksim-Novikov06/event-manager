@@ -1,17 +1,20 @@
 package com.paradise.service;
 
-import com.paradise.entities.Event;
-import com.paradise.repository.EventRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.paradise.domain.entities.Event;
+import com.paradise.dto.EventDto;
+import com.paradise.dto.EventSearchRequest;
 
-@Service
-@RequiredArgsConstructor
-public class EventService {
+import java.util.List;
 
-    private final EventRepository eventRepository;
+public interface EventService {
 
-    public Event addEvent(Event entity) {
-        return null;
-    }
+    Event addEvent(Event entity);
+    void deleteEventById(Long id);
+    Event getEventById(Long id);
+    Event update(Long id,EventDto eventToUpdate);
+    List<Event> search(EventSearchRequest eventToSearch);
+    List<Event> getAllEventsCreationByOwner();
+    void registerUserOnEvent(Long id);
+    void cancelUserByEventId(Long id);
+    List<Event> getAllEventByUserRegistration();
 }

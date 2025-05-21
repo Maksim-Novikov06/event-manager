@@ -1,9 +1,9 @@
 package com.paradise.controllers;
 
-import com.paradise.converter.LocationMapper;
+import com.paradise.mapper.LocationMapper;
 import com.paradise.dto.LocationDto;
-import com.paradise.entities.Location;
-import com.paradise.service.LocationService;
+import com.paradise.domain.entities.Location;
+import com.paradise.service.impl.LocationServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LocationController {
 
-    private final LocationService locationService;
+    private final LocationServiceImpl locationServiceImpl;
     private final LocationMapper locationMapper;
 
     @PostMapping
@@ -26,7 +26,7 @@ public class LocationController {
     public ResponseEntity<LocationDto> addLocation(
             @RequestBody @Valid LocationDto locationToCreate
     ) {
-        Location createdLocation = locationService.createLocation(
+        Location createdLocation = locationServiceImpl.createLocation(
                 locationMapper.toEntity(locationToCreate)
         );
 
@@ -41,7 +41,7 @@ public class LocationController {
             @PathVariable Long id,
             @RequestBody @Valid LocationDto locationToUpdate
     ) {
-        Location updatedLocation = locationService.updateLocation(
+        Location updatedLocation = locationServiceImpl.updateLocation(
                 id,
                 locationMapper.toEntity(locationToUpdate)
         );
@@ -53,7 +53,7 @@ public class LocationController {
     @PreAuthorize("hasAuthority('ADMIN, USER')")
     @GetMapping
     public ResponseEntity<List<LocationDto>> getAllLocations() {
-        List<LocationDto> listLocations = locationService.getAllLocations()
+        List<LocationDto> listLocations = locationServiceImpl.getAllLocations()
                 .stream()
                 .map(locationMapper::toDto)
                 .toList();
@@ -68,7 +68,7 @@ public class LocationController {
     public ResponseEntity<LocationDto> getLocationById(
             @PathVariable Long id
     ) {
-        Location location = locationService.getLocationById(id);
+        Location location = locationServiceImpl.getLocationById(id);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -80,7 +80,7 @@ public class LocationController {
     public ResponseEntity<LocationDto> deleteLocation(
             @PathVariable Long id
     ) {
-        Location deletedLocation = locationService.deleteLocationById(id);
+        Location deletedLocation = locationServiceImpl.deleteLocationById(id);
 
         return ResponseEntity.
                 status(HttpStatus.NO_CONTENT)

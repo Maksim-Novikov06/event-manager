@@ -1,4 +1,4 @@
-package com.paradise.entities;
+package com.paradise.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;

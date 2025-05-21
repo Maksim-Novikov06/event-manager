@@ -6,7 +6,10 @@
 
     <include file="v1-create-locations-table-changelog.xml" relativeToChangelogFile="true"/>
     <include file="v1-create-users-table-changelog.xml" relativeToChangelogFile="true"/>
+    <include file="v1-create-events-table-changelog.xml" relativeToChangelogFile="true"/>
+    <include file="v1-create-registrations-table-changelog.xml" relativeToChangelogFile="true"/>
     <include file="v1-insert-users.xml" relativeToChangelogFile="true"/>
     <include file="v1-insert-locations.xml" relativeToChangelogFile="true"/>
+
 
 </databaseChangeLog>

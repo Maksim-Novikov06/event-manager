@@ -1,12 +1,13 @@
 package com.paradise.security.jwt;
 
-import com.paradise.entities.User;
-import com.paradise.service.UserService;
+import com.paradise.domain.entities.User;
+import com.paradise.service.impl.UserServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.NonNull;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,20 +24,20 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenManager jwtTokenManager;
 
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     public JwtTokenFilter(
             JwtTokenManager jwtTokenManager,
-            @Lazy UserService userService) {
+            @Lazy UserServiceImpl userServiceImpl) {
         this.jwtTokenManager = jwtTokenManager;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
     }
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     )throws ServletException, IOException
     {
         String authorizationHeader = request.getHeader("Authorization");
@@ -56,7 +57,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
            filterChain.doFilter(request, response);
            return;
         }
-        User user = userService.findByLogin(loginFromToken);
+        User user = userServiceImpl.getByLogin(loginFromToken);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(

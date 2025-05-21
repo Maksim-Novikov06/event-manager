@@ -1,5 +1,6 @@
 package com.paradise.security;
 
+import com.paradise.exceptions.CustomAuthenticationEntryPoint;
 import com.paradise.security.jwt.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

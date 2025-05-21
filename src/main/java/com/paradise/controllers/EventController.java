@@ -1,9 +1,10 @@
 package com.paradise.controllers;
 
-import com.paradise.converter.EventMapper;
+import com.paradise.dto.EventSearchRequest;
+import com.paradise.mapper.EventMapper;
 import com.paradise.dto.EventDto;
-import com.paradise.entities.Event;
-import com.paradise.service.EventService;
+import com.paradise.domain.entities.Event;
+import com.paradise.service.impl.EventServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,23 +12,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
 public class EventController {
 
-    private final EventService eventService;
+    private final EventServiceImpl eventServiceImpl;
     private final EventMapper eventMapper;
 
 
-    //create event - 1
+
     @PostMapping
     @PreAuthorize("hasAuthority('USER')")
     public ResponseEntity<EventDto> addEvent(
             @RequestBody @Valid EventDto eventToCreate
     ){
 
-        Event createdEvent = eventService.addEvent(
+        Event createdEvent = eventServiceImpl.addEvent(
                 eventMapper.toEntity(eventToCreate)
         );
 
@@ -36,72 +39,110 @@ public class EventController {
                 .body(eventMapper.toDto(createdEvent));
     }
 
-
-
-    //registration - 3
-    @PostMapping("registrations/{id}")
-    @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<?> registrationUserByEventId(
-            @PathVariable Long id
-    ){
-        return null;
-    }
-
-    @DeleteMapping("/registrations/cancel/{id}")
-    @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<?> cancelUserByEventId(
-            @PathVariable Long id
-    ){
-        return null;
-    }
-
-    @DeleteMapping("/my/{id}")
-    public ResponseEntity<?> deleteRegistrationByEventId(
-            @PathVariable Long id
-    ){
-        return null;
-    }
-
-
-    //eventID - 3
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteEventById(
+    @PreAuthorize("hasAuthority('USER, ADMIN')")
+    public ResponseEntity<Void> deleteEventById(
             @PathVariable Long id
     ){
-        return null;
+
+        eventServiceImpl.deleteEventById(id);
+
+        return ResponseEntity
+                .status(HttpStatus
+                        .NO_CONTENT).build();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER, ADMIN')")
     public ResponseEntity<EventDto> getEventById(
             @PathVariable Long id
     ){
-        return null;
+
+        Event event = eventServiceImpl.getEventById(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventMapper.toDto(event));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER, ADMIN')")
     public ResponseEntity<EventDto> updateEventById(
-            @PathVariable Long id
+            @PathVariable Long id,
+            @RequestBody @Valid EventDto eventToUpdate
     ){
-        return null;
+
+        Event updatedEvent = eventServiceImpl.update(id, eventToUpdate);
+
+        return  ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventMapper.toDto(updatedEvent));
     }
 
-
-    //search - 1
-    //веселуха напоследок
-    @GetMapping("/search")
+    @PostMapping("/search")
     @PreAuthorize("hasAuthority('USER,ADMIN')")
-    public ResponseEntity<EventDto> getEventBy(){
-        return null;
+    public ResponseEntity<List<EventDto>> getAllEvent(
+            @RequestBody @Valid EventSearchRequest eventToSearch
+    ){
+        List<Event> eventList = eventServiceImpl.search(eventToSearch);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventList
+                        .stream()
+                        .map(eventMapper::toDto)
+                        .toList()
+                        );
     }
 
-    //my - 1
     @GetMapping("/my")
+    public ResponseEntity<List<EventDto>> findEventsByUserCreation() {
+
+        List<Event> eventList = eventServiceImpl.getAllEventsCreationByOwner();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventList
+                        .stream()
+                        .map(eventMapper::toDto)
+                        .toList());
+    }
+
+    @PostMapping("registrations/{id}")
     @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<EventDto> getMyEvents(){
-        return null;
+    public ResponseEntity<Void> registrationUserOnEvent(
+            @PathVariable("id") Long id
+    ){
+        eventServiceImpl.registerUserOnEvent(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
     }
 
 
+    @DeleteMapping("/registrations/cancel/{id}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> cancelUserByEventId(
+            @PathVariable("id") Long id
+    ){
+        eventServiceImpl.cancelUserByEventId(id);
 
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
 
+    @GetMapping("/registrations/my")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<List<EventDto>> getAllEventsByUserRegistration(){
+
+        List<Event> eventList= eventServiceImpl.getAllEventByUserRegistration();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(eventList
+                        .stream()
+                        .map(eventMapper::toDto)
+                        .toList());
+
+    }
 }

@@ -1,6 +1,6 @@
 package com.paradise.security;
 
-import com.paradise.entities.User;
+import com.paradise.domain.entities.User;
 import com.paradise.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,7 +1,7 @@
-package com.paradise.converter;
+package com.paradise.mapper;
 
 import com.paradise.dto.UserDto;
-import com.paradise.entities.User;
+import com.paradise.domain.entities.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
