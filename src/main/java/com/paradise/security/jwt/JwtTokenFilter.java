@@ -1,13 +1,11 @@
 package com.paradise.security.jwt;
 
-import com.paradise.entities.User;
-import com.paradise.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.context.annotation.Lazy;
+import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,20 +21,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final JwtTokenManager jwtTokenManager;
 
-    private final UserService userService;
-
-    public JwtTokenFilter(
-            JwtTokenManager jwtTokenManager,
-            @Lazy UserService userService) {
+    public JwtTokenFilter(JwtTokenManager jwtTokenManager) {
         this.jwtTokenManager = jwtTokenManager;
-        this.userService = userService;
     }
 
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     )throws ServletException, IOException
     {
         String authorizationHeader = request.getHeader("Authorization");
@@ -48,24 +41,33 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String jwtToken = authorizationHeader.substring(7);
 
         String loginFromToken;
+        Long userId;
 
         try {
             loginFromToken = jwtTokenManager.getLoginFromToken(jwtToken);
+            userId = jwtTokenManager.getUserIdFromToken(jwtToken);
+
+            CustomPrincipal customPrincipal = new CustomPrincipal(userId, loginFromToken);
+
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            customPrincipal,
+                            loginFromToken,
+                            List.of(new SimpleGrantedAuthority("ADMIN"),
+                                    new SimpleGrantedAuthority("USER"))
+                    );
+            authentication.setDetails(userId);
+
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication);
         } catch (Exception e) {
            logger.error("Invalid JWT Token");
            filterChain.doFilter(request, response);
            return;
         }
-        User user = userService.findByLogin(loginFromToken);
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        user,
-                        loginFromToken,
-                        List.of(new SimpleGrantedAuthority(user.getRole())));
 
-        SecurityContextHolder.getContext()
-                .setAuthentication(authentication);
+
         filterChain.doFilter(request, response);
 
     }

@@ -1,7 +1,6 @@
-package com.paradise.security;
+package com.paradise.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.paradise.exceptions.ErrorMessageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

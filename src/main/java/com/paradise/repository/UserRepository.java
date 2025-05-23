@@ -1,6 +1,6 @@
 package com.paradise.repository;
 
-import com.paradise.entities.User;
+import com.paradise.domain.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

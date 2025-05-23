@@ -1,4 +1,4 @@
-package com.paradise.security;
+package com.paradise.domain;
 
 public enum UserRole {
 

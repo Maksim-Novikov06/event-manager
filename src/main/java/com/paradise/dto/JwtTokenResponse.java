@@ -1,4 +1,4 @@
-package com.paradise.security.jwt;
+package com.paradise.dto;
 
 public record JwtTokenResponse (
         String token

@@ -1,9 +1,12 @@
-package com.paradise.security.jwt;
+package com.paradise.service.impl;
 
-import com.paradise.entities.User;
+import com.paradise.domain.entities.User;
 import com.paradise.repository.UserRepository;
-import com.paradise.security.SignInRequest;
+import com.paradise.dto.SignInRequest;
+import com.paradise.security.jwt.JwtTokenManager;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,13 +16,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JwtAuthenticationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationService.class);
     private final AuthenticationManager authenticationManager;
     private final JwtTokenManager jwtTokenManager;
     private final UserRepository userRepository;
 
     public String authenticateUser(SignInRequest signInRequest) {
+        logger.info("Attempt to authenticate user: {}", signInRequest);
+
         User user = userRepository.findByLogin(signInRequest.login())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + signInRequest.login()));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         signInRequest.login(),
@@ -27,6 +34,6 @@ public class JwtAuthenticationService {
                 )
         );
 
-        return jwtTokenManager.generateToken(signInRequest.login());
+        return jwtTokenManager.generateToken(user.getId(), user.getLogin()); // <-- здесь фикс
     }
 }

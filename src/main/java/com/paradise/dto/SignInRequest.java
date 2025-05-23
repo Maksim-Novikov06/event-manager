@@ -1,4 +1,4 @@
-package com.paradise.security;
+package com.paradise.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

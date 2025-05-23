@@ -1,7 +1,7 @@
-package com.paradise.converter;
+package com.paradise.mapper;
 
 import com.paradise.dto.LocationDto;
-import com.paradise.entities.Location;
+import com.paradise.domain.entities.Location;
 import org.mapstruct.Mapper;
 
 

@@ -25,11 +25,12 @@ public class JwtTokenManager {
     }
 
 
-    public String generateToken(String login){
+    public String generateToken(Long userId, String login){
 
         return Jwts
                 .builder()
                 .subject(login)
+                .claim("id", userId)
                 .signWith(key)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
@@ -44,5 +45,14 @@ public class JwtTokenManager {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public Long getUserIdFromToken(String token){
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("id", Long.class);
     }
 }

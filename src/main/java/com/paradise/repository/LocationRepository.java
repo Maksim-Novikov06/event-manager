@@ -1,6 +1,6 @@
 package com.paradise.repository;
 
-import com.paradise.entities.Location;
+import com.paradise.domain.entities.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

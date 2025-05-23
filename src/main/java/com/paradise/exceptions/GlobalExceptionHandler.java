@@ -41,18 +41,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(emr);
     }
 
-    @ExceptionHandler
-    public ResponseEntity<ErrorMessageResponse> handleIllegalArgument(EntityExistsException e) {
-        log.error(e.getMessage());
-
-        ErrorMessageResponse emr = new ErrorMessageResponse(
-                "BAD_REQUEST",
-                e.getMessage(),
-                LocalDateTime.now()
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(emr);
-    }
-
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorMessageResponse> handleIAuthorizationException(Exception e) {
         log.error(e.getMessage());
@@ -66,7 +54,11 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler({
+            UserAlreadyExistsException.class,
+            EntityExistsException.class,
+            IllegalArgumentException.class
+    })
     public ResponseEntity<ErrorMessageResponse> handleUserAlreadyExistsException(Exception e) {
         log.error(e.getMessage());
 
