@@ -66,7 +66,7 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('USER, ADMIN')")
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN')")
     public ResponseEntity<EventDto> updateEventById(
             @PathVariable Long id,
             @RequestBody @Valid EventDto eventToUpdate

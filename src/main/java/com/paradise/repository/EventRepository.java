@@ -113,6 +113,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query(value = """
                 SELECT ev.id FROM events ev
                 WHERE ev.date  + INTERVAL '1 MINUTE' * ev.duration < CURRENT_TIMESTAMP
+                AND ev.status = :status
             """, nativeQuery = true)
-    List<Long> getEndedEventsWithStatus(EventStatus statusEnded);
+    List<Long> getEndedEventsWithStatus(@Param("status") String statusEnded);
+
+    @Query("SELECT e FROM Event e LEFT JOIN FETCH e.eventRegistrations WHERE e.id IN :eventsIds")
+    List<Event> findAllEventsByIds(@Param("eventsIds") List<Long> eventsIds);
 }

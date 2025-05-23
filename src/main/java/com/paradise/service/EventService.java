@@ -21,5 +21,5 @@ public interface EventService {
     List<Long> changeEventStatus(EventStatus eventStatus);
     List<Long> getEventsToStarted();
     List<Long> getEventsToEnded();
-
+    List<Event> getEventsByIds(List<Long> eventsIds);
 }

@@ -23,8 +23,10 @@ public class JwtAuthenticationService {
 
     public String authenticateUser(SignInRequest signInRequest) {
         logger.info("Attempt to authenticate user: {}", signInRequest);
+
         User user = userRepository.findByLogin(signInRequest.login())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + signInRequest.login()));
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         signInRequest.login(),
@@ -32,6 +34,6 @@ public class JwtAuthenticationService {
                 )
         );
 
-        return jwtTokenManager.generateToken(signInRequest.login());
+        return jwtTokenManager.generateToken(user.getId(), user.getLogin()); // <-- здесь фикс
     }
 }

@@ -5,6 +5,7 @@ import com.paradise.domain.entities.Event;
 import com.paradise.domain.entities.EventRegistration;
 import com.paradise.domain.entities.Location;
 import com.paradise.domain.entities.User;
+import com.paradise.dto.EventChangeKafkaMessage;
 import com.paradise.dto.EventDto;
 import com.paradise.dto.EventSearchRequest;
 import com.paradise.repository.EventRepository;
@@ -33,6 +34,7 @@ public class EventServiceImpl implements EventService {
     private final RegistrationRepository registrationRepository;
     private final LocationServiceImpl locationService;
     private final UserServiceImpl userService;
+    private final EventKafkaProducerService eventKafkaProducerService;
     private static final Logger logger = LoggerFactory.getLogger(EventServiceImpl.class);
 
 
@@ -123,7 +125,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new EntityNotFoundException("Event with id %d not found".formatted(id)));
     }
 
-    public Event update(Long id, EventDto entity) {
+    public Event update(Long id, EventDto eventDto) {
         logger.info("Attempt to update the event");
 
         User currentUser = getCurrentAuthUser();
@@ -156,13 +158,20 @@ public class EventServiceImpl implements EventService {
             throw new IllegalArgumentException("Max places exceeded");
         }
 
-        eventToUpdate.setName(entity.getName());
-        eventToUpdate.setDate(entity.getDate());
-        eventToUpdate.setCost(entity.getCost());
-        eventToUpdate.setDuration(entity.getDuration());
-        eventToUpdate.setMaxPlaces(entity.getMaxPlaces());
 
-        return eventRepository.save(eventToUpdate);
+
+        eventToUpdate.setName(eventDto.getName());
+        eventToUpdate.setDate(eventDto.getDate());
+        eventToUpdate.setCost(eventDto.getCost());
+        eventToUpdate.setDuration(eventDto.getDuration());
+        eventToUpdate.setMaxPlaces(eventDto.getMaxPlaces());
+
+        eventRepository.save(eventToUpdate);
+
+        EventChangeKafkaMessage eventChangeKafkaMessage = getEventChangeKafkaMessage(eventToUpdate, eventDto, currentUser);
+        eventKafkaProducerService.sendEvent(eventChangeKafkaMessage);
+
+        return eventToUpdate;
     }
 
 
@@ -277,9 +286,37 @@ public class EventServiceImpl implements EventService {
     }
 
     public List<Long> getEventsToEnded() {
-        return eventRepository.getEndedEventsWithStatus(EventStatus.STARTED);
+        return eventRepository.getEndedEventsWithStatus(EventStatus.STARTED.name());
     }
 
+    @Override
+    public List<Event> getEventsByIds(List<Long> eventsIds) {
+        return eventRepository.findAllEventsByIds(eventsIds);
+    }
+
+    private EventChangeKafkaMessage getEventChangeKafkaMessage(
+            Event eventToUpdate,
+            EventDto eventDto,
+            User currentUser
+    ) {
+        return new EventChangeKafkaMessage(
+                eventToUpdate.getId(),
+                currentUser.getId(),
+                eventToUpdate.getOwnerId(),
+                eventDto.getName(),
+                eventDto.getMaxPlaces(),
+                eventDto.getDate(),
+                eventDto.getCost(),
+                eventDto.getDuration(),
+                eventDto.getLocationId(),
+                eventToUpdate.getEventStatus(),
+                eventToUpdate.getEventRegistrations()
+                        .stream()
+                        .map(EventRegistration::getUserId)
+                        .toList()
+
+        );
+    }
 
 
 
